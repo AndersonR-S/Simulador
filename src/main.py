@@ -50,7 +50,7 @@ class PygameWidget(QWidget):
 
         spacing = 20
 
-        self.num_pos = [0, 0]
+        self.num_pos = [0, 0]  ### Contador de posições
         # Desenha a grade alinhada
         for x in range(mid_x % spacing, width, spacing):  # Linhas verticais
             pygame.draw.line(self.screen, (200, 200, 200), (x, 0), (x, height))
