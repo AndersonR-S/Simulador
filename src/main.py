@@ -50,11 +50,15 @@ class PygameWidget(QWidget):
 
         spacing = 20
 
+        self.num_pos = [0, 0]
         # Desenha a grade alinhada
         for x in range(mid_x % spacing, width, spacing):  # Linhas verticais
             pygame.draw.line(self.screen, (200, 200, 200), (x, 0), (x, height))
+            self.num_pos[0] += 1
         for y in range(mid_y % spacing, height, spacing):  # Linhas horizontais
             pygame.draw.line(self.screen, (200, 200, 200), (0, y), (width, y))
+            self.num_pos[1] += 1
+
 
         pygame.draw.line(self.screen, (0, 0, 0), (0, mid_y), (width, mid_y), 2)  # Eixo X
         pygame.draw.line(self.screen, (0, 0, 0), (mid_x, 0), (mid_x, height), 2)  # Eixo Y
@@ -97,6 +101,26 @@ class PygameWidget(QWidget):
         image_data = pygame.image.tostring(self.screen, "RGB")
         qimage = QImage(image_data, width, height, QImage.Format_RGB888)
         self.label.setPixmap(QPixmap.fromImage(qimage))
+
+    def limitador(self, position):
+        width, height = self.num_pos
+        x,y = position
+        width= int(width/2) - 1
+        height = int(height/2) - 1
+        print(f'x: {width}, y: {height}')
+        if x <-width or x > width or y < -height or y > height:
+            return True
+        return False
+    
+    def verificar_posicao(self, pos):
+        x, y = pos
+        for charge in self.charges:
+            x1, y1 = charge['pos']
+            if x == x1 and y == y1:
+                return True
+        return False
+    
+
 
     def atualizarName(self):
         for i in range(len(self.charges)):
@@ -561,6 +585,13 @@ class Interface(QMainWindow):
             """)
             self.layout_menu_esquerdo.addWidget(button)
 
+    def verificar_dados(self, value_charge, position):
+        if value_charge != "" and position != "":
+            pos_tuple = tuple(map(float, position.strip("()").split(",")))
+            if not self.pygame_widget.verificar_posicao(pos_tuple) and not self.pygame_widget.limitador(pos_tuple):
+                self.pygame_widget.addCharge(value_charge, position)
+        
+
     def adicionar(self):
         self.limpar_menu_esquerdo()
 
@@ -579,8 +610,8 @@ class Interface(QMainWindow):
         pos_texto.setStyleSheet("font-size: 18px; padding: 10px; border: 1px solid gray;")
 
         add_button = QPushButton("Adicionar")
-        add_button.clicked.connect(lambda: self.pygame_widget.addCharge(q_campo_texto.text().strip(), pos_texto.text().strip()))
-        add_button.setStyleSheet("font-family: fonte; font-size: 16px; padding: 10px;  color: black; margin-top: 20px;")
+        add_button.clicked.connect(lambda: self.verificar_dados(q_campo_texto.text().strip(), pos_texto.text().strip()))
+        add_button.setStyleSheet("font-family: fonte; font-size: 16px; padding: 10px; color: black; margin-top: 20px;")
 
         self.layout_menu_esquerdo.addWidget(title_adicionar)
         self.layout_menu_esquerdo.addWidget(q_adicionar)
